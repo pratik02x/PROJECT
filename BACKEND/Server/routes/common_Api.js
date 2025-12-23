@@ -13,9 +13,9 @@ const router=express.Router();
 router.post("/auth/login",(req,res)=>{
     const {email,password}=req.body;
   
-    // const hashedpassword=cryptojs.SHA256(password).toString;
+    const hashedpassword=cryptojs.SHA256(password).toString();
     const sql="SELECT * FROM users WHERE email=? AND password=?";
-    pool.query(sql,[email,password],(error,data)=>{
+    pool.query(sql,[email,hashedpassword],(error,data)=>{
 
         if(error){
              res.send(result.createResult(error));
@@ -25,15 +25,19 @@ router.post("/auth/login",(req,res)=>{
         }
         else{
                 const user=data[0];
+            
                 const payload={
                     email:user.email,
-                    password:user.password
+                    password:user.password,
+                    role:user.role
                 }
 
                 const token=jwt.sign(payload,config.SECRET);
 
                 const userdata={
+                    
                     role:user.role,
+                    email:user.email,
                     token
                 }
 

@@ -3,10 +3,12 @@ const result=require("../utils/result")
 const pool=require("../db/pool")
 const crypto=require("crypto-js")
 
+
 const router=express.Router();
 //add a student to a course
 router.post("/register-to-course",(req,res)=>{
-    const {name,email, course_id,mobile_no}=req.body;
+    
+    const {name, email,course_id,mobile_no}=req.body;
 
     // step 1 check if user exists
     const usersql="SELECT * FROM users WHERE email=?";
@@ -18,6 +20,7 @@ router.post("/register-to-course",(req,res)=>{
             const password = "sunbeam";
             // crypto 
             const hashedpassword=crypto.SHA256(password).toString();
+            console.log(crypto.SHA256("p").toString())
             const role="student";
              const uusersql=`INSERT INTO users(email,password,role) VALUES(?,?,?)`;
              pool.query(uusersql,[email,hashedpassword,role],(error,data)=>{
@@ -62,8 +65,9 @@ router.post("/register-to-course",(req,res)=>{
 
 //update password
 router.put("/changepassword",(req,res)=>{
-    const{email,newpassword,confirmpassword}=req.body;
+    const{newpassword,confirmpassword}=req.body;
    
+    const email=req.headers.email;
     
     
      if(newpassword != confirmpassword){
@@ -89,7 +93,7 @@ router.put("/changepassword",(req,res)=>{
 // /get all registered courses of a student
 
 router.get("/my-courses",(req,res)=>{
-    const { email } = req.query;
+    const email = req.headers.email;
 
     const sql = `
       SELECT c.course_name
@@ -102,12 +106,38 @@ router.get("/my-courses",(req,res)=>{
         if(error){
             return res.send(result.createResult(error));
         }
-        else if(data.length==0){
+        else if(data.length===0){
              return res.send(result.createResult("NO courses are available"));
         }
         res.send(result.createResult(null,data));
     })
 })
+
+///my-coursewith-videos
+router.get("/my-coursewith-videos", (req, res) => {
+    const {email}  = req.headers;
+
+    const sql = `
+        SELECT 
+            c.course_id,
+            c.course_name,
+            v.video_id,
+            v.title,
+            v.youtube_url
+        FROM students s
+        INNER JOIN courses c ON s.course_id = c.course_id
+        INNER JOIN videos v ON c.course_id = v.course_id
+        WHERE s.email = ?
+    `;
+
+    pool.query(sql, [email], (error, data) => {
+        if (error) {
+            return res.send(result.createResult(error));
+        }
+        res.send(result.createResult(null, data));
+    });
+});
+
 
 
 

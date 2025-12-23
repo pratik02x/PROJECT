@@ -1,7 +1,7 @@
 const express=require("express");
 const router=express.Router();
 
-
+const{authorization}=require("../utils/auth")
 
 const pool=require("../db/pool");
 const result=require("../utils/result");
@@ -27,7 +27,7 @@ router.get("/course/all-courses",(req,res)=>{
 
 //add course
 
-router.post("/course/add",(req,res)=>{
+router.post("/course/add",authorization,(req,res)=>{
     const{course_name,description,fees,start_date,end_date,video_expire_days}=req.body;
     const sql=`INSERT INTO courses(course_name,description,fees,start_date,end_date,video_expire_days) VALUES (?,?,?,?,?,?)`;
     pool.query(sql,[course_name,description,fees,start_date,end_date,video_expire_days],(error,data)=>{
@@ -37,7 +37,7 @@ router.post("/course/add",(req,res)=>{
 
 //update a course
 
-router.put("/course/update/:course_id",(req,res)=>{
+router.put("/course/update/:course_id",authorization,(req,res)=>{
     const{course_id}=req.params;
     const{course_name,description,fees,start_date,end_date,video_expire_days}=req.body;
     const sql=`UPDATE courses SET course_name=?,description=?,fees=?,start_date=?,end_date=?,video_expire_days=? WHERE course_id=? `;
@@ -56,7 +56,7 @@ router.put("/course/update/:course_id",(req,res)=>{
 })
 
 //delete a course by course id
-router.delete("/course/delete/:courseId",(req,res)=>{
+router.delete("/course/delete/:courseId",authorization,(req,res)=>{
     const {course_id}=req.params;
     const sql=`DELETE FROM courses WHERE course_id=?`;
     pool.query(sql,[course_id],(error))
@@ -64,7 +64,7 @@ router.delete("/course/delete/:courseId",(req,res)=>{
 })
 
 //fetch all videos
-router.get("/video/all-videos/:course_id",(req,res)=>{
+router.get("/video/all-videos/:course_id",authorization,(req,res)=>{
         const{course_id}=req.params;
         const sql=`SELECT * FROM videos WHERE course_id=?`;
         pool.query(sql,[course_id],(error,data)=>{
@@ -77,7 +77,7 @@ router.get("/video/all-videos/:course_id",(req,res)=>{
 }) 
 
 //add a new video for course
-router.post("/video/add",(req,res)=>{
+router.post("/video/add",authorization,(req,res)=>{
     const {course_id, title, description,youtube_url,added_at}=req.body;
     const sql=`INSERT INTO videos(course_id, title, description,youtube_url,added_at) VALUES(?,?,?,?,?)`;
     pool.query(sql,[course_id, title, description,youtube_url,added_at],(error,data)=>{
@@ -88,7 +88,7 @@ router.post("/video/add",(req,res)=>{
 )
 
 //update video details by video id
-router.put("/video/update/:video_id",(req,res)=>{
+router.put("/video/update/:video_id",authorization,(req,res)=>{
     const {video_id}=req.params;
     const {course_id, title,description,youtube_url,added_at}=req.body;
     const sql=`UPDATE videos SET course_id=?, title=?,description=?,youtube_url=?,added_at=?  WHERE video_id=?`;
@@ -105,7 +105,7 @@ router.put("/video/update/:video_id",(req,res)=>{
 )
 
 //delete a video by video id
-router.delete("/video/delete/:video_id",(req,res)=>{
+router.delete("/video/delete/:video_id",authorization,(req,res)=>{
     const{video_id}=req.params;
     const sql=`DELETE FROM videos WHERE video_id=?`;
     pool.query(sql,[video_id],(error,data)=>{
@@ -121,7 +121,7 @@ router.delete("/video/delete/:video_id",(req,res)=>{
 
 //get all students enrolled to course by course id
 
-router.get("/enrolled/students",(req,res)=>{
+router.get("/enrolled/students",authorization,(req,res)=>{
     const{course_id}=req.query;
     const sql=`SELECT * FROM students WHERE course_id=?`;
     pool.query(sql,[course_id],(error,data)=>{
