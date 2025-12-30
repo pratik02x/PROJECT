@@ -97,8 +97,8 @@ function Navbar() {
                   Videos
                 </span>
                 <ul className="dropdown-menu">
-                  <li><Link className="dropdown-item" to="/addcourse">Get All Videos</Link></li>
-                  <li><Link className="dropdown-item" to="/managestudents">Add Videos</Link></li>
+                  <li><Link className="dropdown-item" to="/getallvideos">Get All Videos</Link></li>
+                  <li><Link className="dropdown-item" to="/addvideos">Add Videos</Link></li>
                 </ul>
               </li>
 

@@ -4,8 +4,8 @@ import { updateCourse } from '../../services/coursesService';
 import { toast } from 'react-toastify';
 
 function EditCourse() {
-    const { id } = useParams(); // URL madhun course ID ghenyasathi
-    const { state } = useLocation(); // GetAllCourses madhun pathvalela data
+    const { id } = useParams(); 
+    const { state } = useLocation(); 
     const navigate = useNavigate();
 
     const [course, setCourse] = useState({
@@ -18,14 +18,14 @@ function EditCourse() {
     });
 
     useEffect(() => {
-        // Jeva page load hoil teva data form madhe bharne
+        
         if (state && state.course) {
             const c = state.course;
             setCourse({
                 course_name: c.course_name,
                 description: c.description,
                 fees: c.fees,
-                // HTML date input sathi date format karne (YYYY-MM-DD)
+                
                 start_date: c.start_date ? c.start_date.split('T')[0] : '',
                 end_date: c.end_date ? c.end_date.split('T')[0] : '',
                 video_expire_days: c.video_expire_days
@@ -40,7 +40,7 @@ function EditCourse() {
     const onUpdate = async (e) => {
         e.preventDefault();
         
-        // axios service function call karne
+       
         const result = await updateCourse(id, course);
 
         if (result.status === "success") {

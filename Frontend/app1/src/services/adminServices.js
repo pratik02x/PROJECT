@@ -59,3 +59,55 @@ export async function deleteCourse(id){
     });
    return  response.data;
 }
+
+export async function getVideos(){
+    const URL=config.Base_URL+"/admin/all-videos";
+    const token=sessionStorage.getItem('token');
+    const response= await axios.get(URL,{
+        
+            headers:{
+                   'token': token
+            }
+        
+    });
+    return response.data;
+}
+
+export async function deleteVideo(id){
+    const URL=config.Base_URL+`/admin/video/delete/${id}`
+    const token=sessionStorage.getItem('token');
+
+    const response= await axios.delete(URL,{
+        headers:{
+            'token':token
+        }
+    });
+
+    return response.data;
+}
+
+export async function updateVideo(id, videoData) {
+    const URL = config.Base_URL + `/admin/video/update/${id}`;
+    const token = sessionStorage.getItem("token");
+
+    const response = await axios.put(URL, videoData, {
+        headers: {
+            'token': token
+        }
+    });
+
+    return response.data;
+}
+
+export async function addVideo(videoData) {
+    const URL = config.Base_URL + `/admin/video/add`; // तुमच्या API एंडपॉईंटप्रमाणे बदला
+    const token = sessionStorage.getItem("token");
+
+    const response = await axios.post(URL, videoData, {
+        headers: {
+            'token': token
+        }
+    });
+
+    return response.data;
+}

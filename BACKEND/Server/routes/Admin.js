@@ -198,3 +198,14 @@ router.get("/enrolled/students",authorization,(req,res)=>{
     })
 })
 module.exports=router;
+
+router.get("/all-videos", authorization, (req, res) => {
+    const sql = `SELECT v.video_id, c.course_name, v.title, v.description, v.youtube_url, v.added_at 
+                 FROM videos v 
+                 JOIN courses c ON v.course_id = c.course_id`;
+    
+    pool.query(sql, (error, data) => {
+        if (error) return res.send({ status: 'error', error: error.message });
+        res.send({ status: 'success', data: data });
+    });
+});
