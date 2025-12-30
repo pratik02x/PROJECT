@@ -20,7 +20,7 @@ router.post("/register-to-course",(req,res)=>{
             const password = "sunbeam";
             // crypto 
             const hashedpassword=crypto.SHA256(password).toString();
-            console.log(crypto.SHA256("p").toString())
+            
             const role="student";
              const uusersql=`INSERT INTO users(email,password,role) VALUES(?,?,?)`;
              pool.query(uusersql,[email,hashedpassword,role],(error,data)=>{
@@ -64,63 +64,98 @@ router.post("/register-to-course",(req,res)=>{
 
 
 //update password
-router.put("/changepassword",(req,res)=>{
-    const{newpassword,confirmpassword}=req.body;
-   
-    const email=req.headers.email;
-    
-    
-     if(newpassword != confirmpassword){
-        return res.send(result.createResult("passwords do not match"));
+router.put("/changepassword", (req, res) => {
+
+  const { oldpassword, newpassword, confirmpassword } = req.body;
+  const email = req.headers.email;
+
+ 
+  if (!oldpassword || !newpassword || !confirmpassword) {
+    return res.send(result.createResult("All fields are required"));
+  }
+
+  if (newpassword !== confirmpassword) {
+    return res.send(result.createResult("Passwords do not match"));
+  }
+
+ 
+  const oldHashedPassword = crypto.SHA256(oldpassword).toString();
+
+ 
+  const checkSql = `SELECT * FROM users WHERE email=? AND password=?`;
+
+  pool.query(checkSql, [email, oldHashedPassword], (error, data) => {
+
+    if (error) {
+      return res.send(result.createResult(error));
     }
 
-    const hashedpassword=crypto.SHA256(newpassword).toString();
-    const sql=`UPDATE users SET password=? WHERE email=?`;
-    pool.query(sql,[hashedpassword,email],(error,data)=>{
-        if(error){
-            return res.send(result.createResult(error));
-        }
-        
-        else if(data.affectedRows==0){
-            return res.send("Invalid credintial");
-        }
+   
+    if (data.length === 0) {
+      return res.send(result.createResult("Old password is incorrect"));
+    }
 
-        res.send(result.createResult(null,data));
-    })
+    
+    const newHashedPassword = crypto.SHA256(newpassword).toString();
 
-})
+    
+    const updateSql = `UPDATE users SET password=? WHERE email=?`;
+
+    pool.query(updateSql, [newHashedPassword, email], (err2, updateResult) => {
+
+      if (err2) {
+        return res.send(result.createResult(err2));
+      }
+
+      if (updateResult.affectedRows === 0) {
+        return res.send(result.createResult("Invalid email"));
+      }
+
+      return res.send(
+        result.createResult(null, "Password updated successfully")
+      );
+    });
+  });
+});
+
 
 // /get all registered courses of a student
 
-router.get("/my-courses",(req,res)=>{
-    const email = req.headers.email;
+router.get("/my-courses", (req, res) => {
+    const { email } = req.headers;
 
+    // DISTINCT mule duplicate course entries kadhun taklya jaatat
     const sql = `
-      SELECT c.course_name
+      SELECT DISTINCT 
+          c.course_id, 
+          c.course_name, 
+          c.image, 
+          c.start_date, 
+          c.end_date
       FROM courses c
       INNER JOIN students s ON s.course_id = c.course_id
       WHERE s.email = ?
     `;
 
-    pool.query(sql,[email],(error,data)=>{
-        if(error){
+    pool.query(sql, [email], (error, data) => {
+        if (error) {
             return res.send(result.createResult(error));
         }
-        else if(data.length===0){
-             return res.send(result.createResult("NO courses are available"));
-        }
-        res.send(result.createResult(null,data));
-    })
-})
+        // Jar data nasel tar empty array pathva
+        res.send(result.createResult(null, data || []));
+    });
+});
 
-///my-coursewith-videos
+// // /my-coursewith-videos
 router.get("/my-coursewith-videos", (req, res) => {
-    const {email}  = req.headers;
+    const { email } = req.headers;
 
     const sql = `
-        SELECT 
+        SELECT DISTINCT
             c.course_id,
             c.course_name,
+            c.start_date,
+            c.end_date,
             v.video_id,
             v.title,
             v.youtube_url
@@ -131,10 +166,27 @@ router.get("/my-coursewith-videos", (req, res) => {
     `;
 
     pool.query(sql, [email], (error, data) => {
-        if (error) {
-            return res.send(result.createResult(error));
-        }
+        if (error) return res.send(result.createResult(error));
         res.send(result.createResult(null, data));
+    });
+});
+
+
+module.exports=router;
+
+router.get("/course-videos/:id", (req, res) => {
+    const courseId = req.params.id; // URL madhun ID ghene
+
+    const sql = `
+        SELECT video_id, title AS video_title, youtube_url AS video_url 
+        FROM videos 
+        WHERE course_id = ?
+    `;
+
+    pool.query(sql, [courseId], (error, data) => {
+        if (error) return res.send(result.createResult(error));
+        // Jar videos sapdle nahit tar empty array pathva
+        res.send(result.createResult(null, data || []));
     });
 });
 

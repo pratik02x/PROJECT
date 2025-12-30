@@ -1,5 +1,6 @@
 const express=require("express");
-
+const cors = require("cors");
+const path = require('path');
 
 const app=express();
 
@@ -8,7 +9,9 @@ const commenApi=require("./routes/common_Api");
 const adminRouter=require("./routes/Admin");
 const studentRouter=require("./routes/student");
 
-
+app.use(cors())
+app.use(express.static(path.join(__dirname, 'uploads')));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json())
 app.use(authuser);
 // app.use(authorization);

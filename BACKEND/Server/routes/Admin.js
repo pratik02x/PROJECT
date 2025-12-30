@@ -1,5 +1,7 @@
 const express=require("express");
 const router=express.Router();
+const multer = require('multer');
+const path = require('path');
 
 const{authorization}=require("../utils/auth")
 
@@ -11,9 +13,9 @@ const { error } = require("node:console");
 //get using query parameter
 
 router.get("/course/all-courses",(req,res)=>{
-    const {start_date,end_date}=req.query;
-    const sql=`SELECT * FROM courses WHERE start_date<=? AND end_date >=  ? `;
-    pool.query(sql,[end_date,start_date],(error,data)=>{
+    // const {start_date,end_date}=req.query;
+    const sql=`SELECT * FROM courses`;
+    pool.query(sql,(error,data)=>{
         if(error){
             return res.send(result.createResult(error));
         }
@@ -27,14 +29,49 @@ router.get("/course/all-courses",(req,res)=>{
 
 //add course
 
-router.post("/course/add",authorization,(req,res)=>{
-    const{course_name,description,fees,start_date,end_date,video_expire_days}=req.body;
-    const sql=`INSERT INTO courses(course_name,description,fees,start_date,end_date,video_expire_days) VALUES (?,?,?,?,?,?)`;
-    pool.query(sql,[course_name,description,fees,start_date,end_date,video_expire_days],(error,data)=>{
-        res.send(result.createResult(error,data));
-    })
-})
 
+
+
+
+
+
+// १. Storage Setup
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); 
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
+
+
+router.post("/add", authorization, upload.single('course_image'), (req, res) => {
+   
+    if (!req.body) {
+        return res.status(400).send({ status: 'error', message: "Data not received " });
+    }
+
+   
+    const { course_name, description, fees, start_date, end_date, video_expire_days } = req.body;
+    
+    
+    if (!course_name) {
+        return res.status(400).send({ status: 'error', message: "course_name missing!" });
+    }
+
+    const image_name = req.file ? req.file.filename : null;
+
+    const sql = `INSERT INTO courses (course_name, description, fees, start_date, end_date, video_expire_days, course_image) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    pool.query(sql, [course_name, description, fees, start_date, end_date, video_expire_days, image_name], (error, data) => {
+        if (error) return res.send({ status: 'error', error: error.message });
+        res.send({ status: 'success', data: data });
+    });
+});
 //update a course
 
 router.put("/course/update/:course_id",authorization,(req,res)=>{
