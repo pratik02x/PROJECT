@@ -16,6 +16,8 @@ import CourseDetails from "./pages/Coursedetails"
 import CourseContent from "./pages/CourseContent"
 import GetAllCourses from "./pages/Admin/GetAllCourses"
 import AddCourse from "./pages/Admin/AddCourse"
+import EditCourses from "./pages/Admin/EditCourses"
+
 
 export const LoginContext=createContext();
 function App() {
@@ -47,6 +49,7 @@ function App() {
           <Route path="course-content" element={<CourseContent/>} />
           <Route path="getcourses" element={<GetAllCourses/>}/>
           <Route path="addcourse" element={<AddCourse/>}/>
+          <Route path="/edit-course/:id" element={<EditCourses />} />
         </Routes>
         <ToastContainer/>
        

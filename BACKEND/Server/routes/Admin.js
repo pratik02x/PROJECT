@@ -10,10 +10,9 @@ const result=require("../utils/result");
 const { param, route } = require("./common_Api");
 const { error } = require("node:console");
 
-//get using query parameter
 
 router.get("/course/all-courses",(req,res)=>{
-    // const {start_date,end_date}=req.query;
+    
     const sql=`SELECT * FROM courses`;
     pool.query(sql,(error,data)=>{
         if(error){
@@ -35,7 +34,7 @@ router.get("/course/all-courses",(req,res)=>{
 
 
 
-// १. Storage Setup
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/'); 
@@ -93,12 +92,45 @@ router.put("/course/update/:course_id",authorization,(req,res)=>{
 })
 
 //delete a course by course id
-router.delete("/course/delete/:courseId",authorization,(req,res)=>{
-    const {course_id}=req.params;
-    const sql=`DELETE FROM courses WHERE course_id=?`;
-    pool.query(sql,[course_id],(error))
+router.delete("/course/delete/:courseId", authorization, (req, res) => {
+   
+    const { courseId } = req.params;
 
-})
+    if (!courseId) {
+        return res.send({ status: 'error', message: "Course ID missing aahe!" });
+    }
+
+    
+    const sqlVideos = `DELETE FROM videos WHERE course_id = ?`;
+
+    pool.query(sqlVideos, [courseId], (error, videoResult) => {
+        if (error) {
+            console.error("Video Delete Error:", error.message);
+            return res.send({ status: 'error', message: "Videos delete karta aale nahit", error: error.message });
+        }
+
+        
+        const sqlCourse = `DELETE FROM courses WHERE course_id = ?`;
+
+        pool.query(sqlCourse, [courseId], (err, courseResult) => {
+            if (err) {
+                console.error("Course Delete Error:", err.message);
+                return res.send({ status: 'error', message: "course can't delete", error: err.message });
+            }
+
+           
+            if (courseResult.affectedRows === 0) {
+                return res.send({ status: 'error', message: "Course not found" });
+            }
+
+            // Success!
+            res.send({ 
+                status: 'success', 
+                message: "Course deleted successfully" 
+            });
+        });
+    });
+});
 
 //fetch all videos
 router.get("/video/all-videos/:course_id",authorization,(req,res)=>{

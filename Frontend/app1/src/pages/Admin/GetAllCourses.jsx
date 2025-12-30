@@ -1,62 +1,92 @@
 import React, { useEffect, useState } from 'react';
+import { getcourses } from '../../services/coursesService'; // deleteCourse service add kara
 import { useNavigate } from 'react-router-dom';
-import { getcourses } from '../../services/adminServices';
-import { getCourseVideos } from '../../services/coursesService';
+import { toast } from 'react-toastify';
+import { deleteCourse } from '../../services/adminServices';
 
 function GetAllCourses() {
-  const [courses, setCourses] = useState([]);
-  const navigate = useNavigate();
+    const [courses, setCourses] = useState([]);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+    useEffect(() => {
+        loadCourses();
+    }, []);
 
-  const fetchData = async () => {
-    
-    const res = await getcourses();
-    console.log(res.data)
-   
-    if (res.status === 'success' && res.data) {
-      setCourses(res.data);
-    }
-  };
+    const loadCourses = async () => {
+        const result = await getcourses();
+        if (result.status === "success") {
+            setCourses(result.data);
+        }
+    };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-  };
+    const onDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this course?")) {
+            const result = await deleteCourse(id);
+            if (result.status === "success") {
+                toast.success("Course deleted successfully");
+                loadCourses();
+            } else {
+                toast.error("Error deleting course");
+            }
+        }
+    };
 
-  return (
-    <div className="container mt-4">
-      <h2 className="mb-4 fw-bold">Available Courses</h2>
-      <div className="row g-4">
-        {courses.length > 0 ? (
-          courses.map((course) => (
-            <div className="col-md-4" key={course.course_id}>
-              <div className="card h-100 shadow-sm border-0" style={{ borderRadius: '15px' }}>
-                <div className="card-body p-4 text-center">
-                  <h5 className="fw-bold mb-2">{course.course_name}</h5>
-                  <p className="text-muted small">
-                    Starts: {formatDate(course.start_date)}
-                  </p>
-                  <button 
-                    className="btn btn-primary w-100 rounded-pill"
-                    onClick={() => navigate('/course-content', { state: { course } })}
-                  >
-                    View More
-                  </button>
-                </div>
-              </div>
+    return (
+        <div className="container mt-5">
+            <h2 className="text-center mb-4">All Courses</h2>
+            <div className="table-responsive shadow-sm p-3 mb-5 bg-white rounded">
+                <table className="table table-hover align-middle text-center">
+                    <thead className="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Course Name</th>
+                            <th>Description</th>
+                            <th>Fees</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Expire Days</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {courses.map((course) => (
+                            <tr key={course.course_id}>
+                                <td>{course.course_id}</td>
+                                <td className="fw-bold">{course.course_name}</td>
+                                <td>{course.description}</td>
+                                <td>₹{course.fees}</td>
+                                <td>{new Date(course.start_date).toLocaleDateString()}</td>
+                                <td>{new Date(course.end_date).toLocaleDateString()}</td>
+                                <td>{course.video_expire_days}</td>
+                                <td>
+                                    {/* Action Buttons */}
+                                    <div className="d-flex justify-content-center gap-2">
+                                        {/* Edit Button (Yellow) */}
+                                        <button 
+                                            onClick={() => navigate(`/edit-course/${course.course_id}`, { state: { course } })}
+                                            className="btn btn-warning btn-sm shadow-sm"
+                                            title="Edit Course"
+                                        >
+                                            <i className="bi bi-pencil-square"></i> Edit
+                                        </button>
+
+                                        {/* Delete Button (Red) */}
+                                        <button 
+                                            onClick={() => onDelete(course.course_id)}
+                                            className="btn btn-danger btn-sm shadow-sm"
+                                            title="Delete Course"
+                                        >
+                                            <i className="bi bi-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
-          ))
-        ) : (
-          <p className="text-center mt-5 text-muted">No courses available.</p>
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 }
 
 export default GetAllCourses;

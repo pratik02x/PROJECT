@@ -47,3 +47,15 @@ export async function addCourse(formData) {
     });
     return response.data;
 }
+
+export async function deleteCourse(id){
+    const URL=config.Base_URL+`/admin/course/delete/${id}`;
+    const  token=sessionStorage.getItem(`token`);
+
+    const response= await axios.delete(URL,{
+        headers: {
+            'token': token
+        }
+    });
+   return  response.data;
+}
