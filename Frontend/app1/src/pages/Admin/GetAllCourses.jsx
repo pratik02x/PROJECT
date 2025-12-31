@@ -6,7 +6,6 @@ import { deleteCourse } from '../../services/adminServices';
 
 function GetAllCourses() {
     const [courses, setCourses] = useState([]);
-   
     const [searchText, setSearchText] = useState("");
     const navigate = useNavigate();
 
@@ -15,25 +14,39 @@ function GetAllCourses() {
     }, []);
 
     const loadCourses = async () => {
-        const result = await getcourses();
-        if (result.status === "success") {
-            setCourses(result.data);
+        try {
+            const result = await getcourses();
+            if (result.status === "success") {
+                setCourses(result.data);
+            }
+        } catch (error) {
+            toast.error("Error loading courses");
         }
     };
 
     const onDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this course?")) {
-            const result = await deleteCourse(id);
-            if (result.status === "success") {
-                toast.success("Course deleted successfully");
-                loadCourses();
-            } else {
-                toast.error("Error deleting course");
+            try {
+                const result = await deleteCourse(id);
+                if (result.status === "success") {
+                    toast.success("Course deleted successfully");
+                    
+                    // UI madhun lagech delete karnyasathi state filter kara
+                    // Ya mule reload chi garaj padnar nahi ani list refresh hoil
+                    const updatedCourses = courses.filter(course => course.course_id !== id);
+                    setCourses(updatedCourses);
+                    
+                } else {
+                    // Jar backend error det asel (Foreign key mule)
+                    toast.error(result.error || "Cannot delete: This course might have enrolled students or data linked to it.");
+                }
+            } catch (error) {
+                toast.error("Server error while deleting");
             }
         }
     };
 
-   
+    // Filtered list search sathi
     const filteredCourses = courses.filter((course) => {
         return course.course_name.toLowerCase().includes(searchText.toLowerCase());
     });
@@ -42,7 +55,6 @@ function GetAllCourses() {
         <div className="container mt-5">
             <h2 className="text-center mb-4 fw-bold">All Courses</h2>
 
-         
             <div className="row mb-4 justify-content-center">
                 <div className="col-md-6">
                     <div className="input-group shadow-sm">
@@ -70,12 +82,10 @@ function GetAllCourses() {
                             <th>Fees</th>
                             <th>Start Date</th>
                             <th>End Date</th>
-                            <th>Expire Days</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        
                         {filteredCourses.length > 0 ? (
                             filteredCourses.map((course) => (
                                 <tr key={course.course_id}>
@@ -85,21 +95,18 @@ function GetAllCourses() {
                                     <td>₹{course.fees}</td>
                                     <td>{new Date(course.start_date).toLocaleDateString()}</td>
                                     <td>{new Date(course.end_date).toLocaleDateString()}</td>
-                                    <td>{course.video_expire_days}</td>
                                     <td>
                                         <div className="d-flex justify-content-center gap-2">
                                             <button 
                                                 onClick={() => navigate(`/edit-course/${course.course_id}`, { state: { course } })}
-                                                className="btn btn-warning btn-sm shadow-sm"
-                                                title="Edit Course"
+                                                className="btn btn-warning btn-sm"
                                             >
                                                 <i className="bi bi-pencil-square"></i> Edit
                                             </button>
 
                                             <button 
                                                 onClick={() => onDelete(course.course_id)}
-                                                className="btn btn-danger btn-sm shadow-sm"
-                                                title="Delete Course"
+                                                className="btn btn-danger btn-sm"
                                             >
                                                 <i className="bi bi-trash"></i> Delete
                                             </button>
@@ -109,7 +116,7 @@ function GetAllCourses() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="8" className="text-muted p-4">No courses found matching "{searchText}"</td>
+                                <td colSpan="7" className="text-muted p-4">No courses found.</td>
                             </tr>
                         )}
                     </tbody>

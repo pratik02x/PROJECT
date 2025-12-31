@@ -20,6 +20,9 @@ import EditCourses from "./pages/Admin/EditCourses"
 import GetAllVideos from "./pages/Admin/GetAllVideos"
 import EditVideo from "./pages/Admin/EditVideo"
 import AddVideo from "./pages/Admin/AddVideos"
+import GetAllStudents from "./pages/Admin/GetAllStudents"
+import AdminDashboard from "./pages/Admin/AdminDashboard"
+import AdminSettings from "./pages/Admin/AdminSettings"
 
 
 export const LoginContext=createContext();
@@ -56,6 +59,9 @@ function App() {
           <Route path="/getallvideos" element={<GetAllVideos/>}/>
           <Route path="/edit-video/:id" element={<EditVideo/>}/>
           <Route path="/addvideos" element={<AddVideo/>}/>
+          <Route path="/getallstudents" element={<GetAllStudents/>}/>
+          <Route path="/dashboard" element={<AdminDashboard/>}/>
+          <Route path="/adminsettings" element={<AdminSettings/>}/>
         </Routes>
         <ToastContainer/>
        

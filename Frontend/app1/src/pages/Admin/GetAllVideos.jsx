@@ -113,7 +113,7 @@ function GetAllVideos() {
                                                 backgroundColor: '#ffc107'
                                             }}
                                             title="Edit Video"
-                                        >
+                                        >Edit
                                             <i className="bi bi-pencil-square" style={{ color: 'black' }}></i>
                                         </button>
 
@@ -128,7 +128,7 @@ function GetAllVideos() {
                                                 backgroundColor: '#dc3545'
                                             }}
                                             title="Delete Video"
-                                        >
+                                        >Delete
                                             <i className="bi bi-trash-fill" style={{ color: 'white' }}></i>
                                         </button>
                                     </div>

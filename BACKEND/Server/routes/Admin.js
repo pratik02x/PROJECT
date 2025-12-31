@@ -93,14 +93,13 @@ router.put("/course/update/:course_id",authorization,(req,res)=>{
 
 //delete a course by course id
 router.delete("/course/delete/:courseId", authorization, (req, res) => {
-   
     const { courseId } = req.params;
 
     if (!courseId) {
         return res.send({ status: 'error', message: "Course ID missing aahe!" });
     }
 
-    
+
     const sqlVideos = `DELETE FROM videos WHERE course_id = ?`;
 
     pool.query(sqlVideos, [courseId], (error, videoResult) => {
@@ -109,24 +108,33 @@ router.delete("/course/delete/:courseId", authorization, (req, res) => {
             return res.send({ status: 'error', message: "Videos delete karta aale nahit", error: error.message });
         }
 
-        
-        const sqlCourse = `DELETE FROM courses WHERE course_id = ?`;
+       
+        const sqlStudents = `DELETE FROM students WHERE course_id = ?`;
 
-        pool.query(sqlCourse, [courseId], (err, courseResult) => {
-            if (err) {
-                console.error("Course Delete Error:", err.message);
-                return res.send({ status: 'error', message: "course can't delete", error: err.message });
+        pool.query(sqlStudents, [courseId], (studentErr, studentResult) => {
+            if (studentErr) {
+                console.error("Student Delete Error:", studentErr.message);
+                return res.send({ status: 'error', message: "Students delete karta aale nahit", error: studentErr.message });
             }
 
            
-            if (courseResult.affectedRows === 0) {
-                return res.send({ status: 'error', message: "Course not found" });
-            }
+            const sqlCourse = `DELETE FROM courses WHERE course_id = ?`;
 
-            // Success!
-            res.send({ 
-                status: 'success', 
-                message: "Course deleted successfully" 
+            pool.query(sqlCourse, [courseId], (err, courseResult) => {
+                if (err) {
+                    console.error("Course Delete Error:", err.message);
+                    return res.send({ status: 'error', message: "Course delete karta aale nahit", error: err.message });
+                }
+
+                if (courseResult.affectedRows === 0) {
+                    return res.send({ status: 'error', message: "Course sapadla nahi" });
+                }
+
+              
+                res.send({ 
+                    status: 'success', 
+                    message: "Course deleted successfully" 
+                });
             });
         });
     });
@@ -209,3 +217,50 @@ router.get("/all-videos", authorization, (req, res) => {
         res.send({ status: 'success', data: data });
     });
 });
+
+
+router.get("/students/all", authorization, (req, res) => {
+    
+    const sql = `
+        SELECT 
+            s.reg_no, 
+            s.name, 
+            s.email, 
+            s.mobile_no, 
+            c.course_name AS course 
+        FROM students s
+        LEFT JOIN courses c ON s.course_id = c.course_id`;
+
+    pool.query(sql, (err, results) => {
+        if (err) {
+            return res.send({ status: 'error', message: err.message });
+        }
+        res.send({ status: 'success', data: results });
+    });
+});
+
+router.put("/update/username", authorization, (req, res) => {
+    
+    const { email, username } = req.body; 
+
+    if (!email || !username) {
+        return res.send({ status: 'error', message: "Data is missing" });
+    }
+
+   
+    const sql = "UPDATE users SET email = ? WHERE email = ?";
+
+    pool.query(sql, [email, username], (error, data) => {
+        if (error) {
+            return res.send({ status: 'error', message: "Update fail zale", error: error.message });
+        }
+        
+        if (data.affectedRows === 0) {
+            return res.send({ status: 'error', message: "Invalid username" });
+        }
+
+        res.send({ status: 'success', data: "Username updated" });
+    });
+});
+
+

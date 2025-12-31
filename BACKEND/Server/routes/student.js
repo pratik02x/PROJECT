@@ -172,7 +172,6 @@ router.get("/my-coursewith-videos", (req, res) => {
 });
 
 
-module.exports=router;
 
 router.get("/course-videos/:id", (req, res) => {
     const courseId = req.params.id; // URL madhun ID ghene
@@ -185,7 +184,7 @@ router.get("/course-videos/:id", (req, res) => {
 
     pool.query(sql, [courseId], (error, data) => {
         if (error) return res.send(result.createResult(error));
-        // Jar videos sapdle nahit tar empty array pathva
+        
         res.send(result.createResult(null, data || []));
     });
 });

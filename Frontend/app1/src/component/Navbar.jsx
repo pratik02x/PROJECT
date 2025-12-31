@@ -18,6 +18,9 @@ function Navbar() {
   const getcourses=()=>{
     navigate("/getcourses");
   }
+  const updateprofile=()=>{
+    navigate("/adminsettings")
+  }
 
   return (
     <>
@@ -61,9 +64,12 @@ function Navbar() {
                     {username}
                   </span>
                   <ul className="dropdown-menu dropdown-menu-end">
-                    <li><button className="dropdown-item" onClick={changepassword}>Update Password</button></li>
-                    <li><hr className="dropdown-divider" /></li>
+                     <li><button className="dropdown-item" onClick={updateprofile}>Update Profile</button></li>
+                     <li><hr className="dropdown-divider" /></li>
+                    
                     <li><button className="dropdown-item" onClick={logout}>Sign Out</button></li>
+                    
+                    
                   </ul>
                 </li>
               )}
@@ -107,7 +113,7 @@ function Navbar() {
                   Students
                 </span>
                 <ul className="dropdown-menu">
-                  <li><Link className="dropdown-item" to="/addcourse">Get All Studens</Link></li>
+                  <li><Link className="dropdown-item" to="/getallstudents">Get All Studens</Link></li>
                   
                 </ul>
               </li>

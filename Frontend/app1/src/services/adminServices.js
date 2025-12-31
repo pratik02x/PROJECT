@@ -100,12 +100,48 @@ export async function updateVideo(id, videoData) {
 }
 
 export async function addVideo(videoData) {
-    const URL = config.Base_URL + `/admin/video/add`; // तुमच्या API एंडपॉईंटप्रमाणे बदला
+    const URL = config.Base_URL + `/admin/video/add`; 
     const token = sessionStorage.getItem("token");
 
     const response = await axios.post(URL, videoData, {
         headers: {
             'token': token
+        }
+    });
+
+    return response.data;
+}
+
+
+
+
+export async function getAllStudents() {
+    const URL = config.Base_URL + '/admin/students/all';
+    const token = sessionStorage.getItem("token"); 
+
+    const response = await axios.get(URL, {
+        headers: {
+            'token': token 
+        }
+    });
+
+    return response.data;
+}
+
+export async function updateusername(newEmail) {
+    const URL = config.Base_URL + "/admin/update/username";
+    
+ 
+    const oldEmail = sessionStorage.getItem("username"); 
+
+    const body = { 
+        email: newEmail,    
+        username: oldEmail  
+    };
+
+    const response = await axios.put(URL, body, {
+        headers: {
+            token: sessionStorage.getItem("token")
         }
     });
 
